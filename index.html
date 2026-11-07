@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stay Compare Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#0F766E;--bg:#FAF8F5;--diff:#FEF3C7;--loc:#DBEAFE;--red:#DC2626;--green:#16A34A;--text:#222222;--muted:#6B6B6B;--line:#E8E2D8}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#D9D5CD;font-family:'Figtree',system-ui,-apple-system,sans-serif;color:var(--text)}
+button,select,input{font-family:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+#wrap{position:fixed;inset:0;overflow:hidden}
+#stage{width:1194px;height:834px;position:absolute;left:50%;top:50%;margin:-417px 0 0 -597px;background:var(--bg);overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.2)}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column}
+svg{display:block}
+h1{font-size:28px;font-weight:700}
+
+.btn{height:44px;padding:0 20px;border-radius:8px;font-size:16px;font-weight:600;display:inline-flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap}
+.btn.pri{background:var(--teal);color:#fff}
+.btn.sec{background:#fff;color:var(--teal);border:1.5px solid var(--teal)}
+.btn.sm{height:38px;font-size:15px}
+.btn[disabled]{opacity:.4;color:#6B7280;background:#E5E7EB;border-color:transparent;cursor:not-allowed}
+.card{background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;color:#222;border:2px solid #fff;flex:none}
+input[type=checkbox]{width:22px;height:22px;accent-color:var(--teal);cursor:pointer;flex:none}
+
+.tabs{height:64px;background:#fff;border-top:1px solid var(--line);display:flex;flex:none}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:12px;font-weight:500;color:var(--muted)}
+.tab svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tab.on{color:var(--teal)}
+
+.ehead{padding:20px 24px 4px}
+.grid{flex:1;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:20px;padding:14px 24px 24px;min-height:0}
+.scard{overflow:hidden;display:flex;flex-direction:column;min-height:0}
+.scard .ph{position:relative;flex:1;min-height:0}
+.scard .ph img,.hph img,.pph img{width:100%;height:100%;object-fit:cover;display:block}
+.scard .info{padding:12px 16px 14px}
+.scard .nm{font-size:17px;font-weight:600}
+.scard .ct{font-size:14px;color:var(--muted);margin-top:1px}
+.scard .pr{font-size:15px;margin-top:6px}
+.scard .pr b{font-weight:700}
+.heart{position:absolute;top:12px;right:12px;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center}
+.heart svg{width:22px;height:22px;fill:none;stroke:#222;stroke-width:1.9;stroke-linejoin:round}
+.heart.on svg{fill:var(--teal);stroke:var(--teal)}
+.toast{position:absolute;left:50%;bottom:84px;transform:translateX(-50%);background:#222;color:#fff;padding:12px 22px;border-radius:8px;font-size:15px;font-weight:500;z-index:50}
+
+.phead{display:flex;justify-content:space-between;align-items:flex-start;padding:22px 24px 14px}
+.phead .btn{margin-top:12px}
+.avs{display:flex}
+.avs .avatar{margin-left:-12px}
+.avs .avatar:first-child{margin-left:0}
+.plist{flex:1;overflow:auto;padding:0 24px;display:flex;flex-direction:column;gap:10px;min-height:0}
+.prow{display:flex;align-items:center;gap:18px;padding:0 20px 0 18px;height:88px;flex:none}
+.prow .sel{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:500;width:84px;cursor:pointer}
+.pph{width:120px;height:66px;border-radius:8px;overflow:hidden;flex:none}
+.prow .pn{flex:1}
+.prow .pn b{font-size:18px;font-weight:600;display:block}
+.prow .pn span{font-size:14px;color:var(--muted)}
+.prow .tot{font-size:18px;font-weight:700}
+.pbar{display:flex;gap:14px;justify-content:flex-end;padding:12px 24px;flex:none}
+.pbar .btn{min-width:220px}
+
+.ctop{height:64px;display:flex;align-items:center;gap:14px;padding:0 24px;flex:none}
+.ctop .back{display:flex;align-items:center;gap:6px;font-size:16px;font-weight:600;color:var(--teal);margin-right:auto}
+.ctop .back svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.sel-dd{height:40px;border:1.5px solid #D6D0C5;border-radius:8px;background:#fff;padding:0 10px;font-size:15px;font-weight:500}
+.voted{font-size:15px;color:var(--muted);font-weight:500}
+.cmp-scroll{flex:1;overflow:auto;padding:0 24px;min-height:0}
+.chead,.crow,.cfoot{display:grid;grid-template-columns:170px repeat(var(--n),1fr)}
+.chead{position:sticky;top:0;z-index:5;background:var(--bg);padding-bottom:10px}
+.hc{padding:0 6px}
+.hcard{background:#fff;border-radius:12px;padding:8px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.hph{position:relative;height:84px;border-radius:8px;overflow:hidden}
+.hot{position:absolute;top:6px;left:6px;background:var(--red);color:#fff;font-size:12px;font-weight:700;padding:3px 9px;border-radius:6px}
+.hn{font-size:16px;font-weight:600;margin:7px 2px 6px}
+.swap{width:100%;height:34px;border:1.5px solid #D6D0C5;border-radius:8px;background:#fff;padding:0 8px;font-size:14px}
+.tbody{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.crow{border-bottom:1px solid var(--line);position:relative}
+.crow:last-child{border-bottom:0}
+.crow.diff{background:var(--diff)}
+.crow.locpin{background:var(--loc)}
+.cl{padding:16px 18px;font-weight:600;font-size:15px;color:#444;display:flex;flex-direction:column;justify-content:center;gap:8px}
+.cc{padding:16px 18px;font-size:15px;line-height:1.35;display:flex;align-items:center}
+.cc .d b{display:block;font-size:16px}
+.cc .d span{font-size:13px;color:var(--muted)}
+.tgl{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--muted)}
+.sw{width:40px;height:22px;border-radius:11px;background:#C9C4BA;position:relative;flex:none}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff}
+.sw.on{background:var(--teal)}
+.sw.on::after{left:20px}
+.rmx{position:absolute;right:12px;top:50%;transform:translateY(-50%);width:30px;height:30px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.rmx svg{width:16px;height:16px;fill:none;stroke:#222;stroke-width:2.2;stroke-linecap:round}
+.cfoot{position:sticky;bottom:0;z-index:5;background:var(--bg);padding:10px 0 14px}
+.vc{display:flex;gap:10px;justify-content:center}
+.vb{width:70px;height:44px;border-radius:8px;background:#fff;border:1.5px solid;display:flex;align-items:center;justify-content:center}
+.vb svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.vb.y{color:var(--green);border-color:var(--green)}
+.vb.n{color:var(--red);border-color:var(--red)}
+.vb.y.on{background:var(--green);color:#fff}
+.vb.n.on{background:var(--red);color:#fff}
+.empty{padding:60px 24px;text-align:center;font-size:16px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:16px}
+
+.map{position:absolute;inset:0;overflow:hidden}
+.map.dropping{cursor:crosshair}
+.map>svg.bg{position:absolute;inset:0;width:1194px;height:834px}
+.stay{position:absolute;transform:translate(-50%,-100%);pointer-events:none;width:122px}
+.stay .box{background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+.stay .box img{width:100%;height:62px;object-fit:cover;display:block}
+.stay .t{padding:5px 8px 6px}
+.stay .t b{display:block;font-size:12px;font-weight:600;line-height:1.2}
+.stay .t span{font-size:12px;color:var(--teal);font-weight:700}
+.stay .tip{width:0;height:0;margin:0 auto;border:7px solid transparent;border-top-color:#fff;border-bottom:0}
+.stay.gray{opacity:.4;filter:grayscale(1)}
+.circle{position:absolute;border-radius:50%;border:3px solid var(--red);background:rgba(220,38,38,.14);transform:translate(-50%,-50%);pointer-events:none}
+.pinmk{position:absolute;width:36px;height:48px;transform:translate(-50%,-92%);pointer-events:none}
+.mapbtn{position:absolute;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.3);z-index:6}
+.dropbtn{top:24px;right:24px;width:56px;height:56px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+.dropbtn.on{background:var(--teal)}
+.mapsw{bottom:24px;right:24px;height:48px;padding:0 18px;border-radius:8px;display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600}
+
+.scrim{position:absolute;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:40}
+.modal{background:#fff;border-radius:12px;width:420px;padding:24px;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+.modal h2{font-size:22px;font-weight:700;margin-bottom:16px}
+.modal .dd{width:100%;height:46px;border:1.5px solid #D6D0C5;border-radius:8px;background:#fff;padding:0 12px;font-size:16px}
+.stepper{display:flex;align-items:center;justify-content:space-between;margin-top:18px}
+.stepper .sb{width:46px;height:46px;border-radius:8px;border:1.5px solid var(--teal);color:var(--teal);font-size:24px;font-weight:600;display:flex;align-items:center;justify-content:center;background:#fff}
+.stepper .sb[disabled]{opacity:.4;color:#6B7280;border-color:#D1D5DB;cursor:not-allowed}
+.stepper .v{font-size:22px;font-weight:700}
+.mact{display:flex;justify-content:flex-end;gap:10px;margin-top:26px}
+.plist2{display:flex;flex-direction:column}
+.person{display:flex;align-items:center;gap:12px;padding:10px 2px;font-size:17px;font-weight:500;cursor:pointer;border-bottom:1px solid var(--line)}
+.person:last-child{border-bottom:0}
+.person .avatar{width:38px;height:38px;font-size:15px}
+
+.rec{align-items:center;justify-content:center}
+.rwrap{display:flex;align-items:center;gap:22px}
+.rarrow{width:48px;height:48px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center}
+.rarrow svg{width:22px;height:22px;fill:none;stroke:var(--teal);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.rarrow[disabled]{opacity:.4;cursor:not-allowed}
+.rcard{width:600px;overflow:hidden}
+.rcard .rph{height:270px}
+.rcard .rph img{width:100%;height:100%;object-fit:cover;display:block}
+.rcard .rb{padding:18px 24px 6px}
+.rcard .rn{font-size:24px;font-weight:700}
+.rcard .rp{font-size:17px;margin-top:3px;color:#444}
+.rcard .rp b{color:var(--text)}
+.warn{display:flex;align-items:center;gap:8px;margin-top:14px;color:var(--red);font-size:15px;font-weight:600}
+.warn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.rs{margin-top:10px;font-size:16px;line-height:1.4;color:#333;min-height:45px}
+.rvote{display:flex;gap:12px;justify-content:center;padding:16px 24px 10px}
+.rvote .vb{width:110px;height:50px}
+.rfull{padding:6px 24px 22px}
+.rfull .btn{width:100%}
+.dots{display:flex;gap:8px;justify-content:center;margin-top:16px}
+.dots i{width:9px;height:9px;border-radius:50%;background:#CFC9BE}
+.dots i.on{background:var(--teal)}
+
+.win{align-items:center;padding-top:28px}
+.win h1{font-size:34px;color:var(--teal)}
+.win .wph{width:540px;height:290px;border-radius:12px;overflow:hidden;margin-top:18px}
+.win .wph img{width:100%;height:100%;object-fit:cover;display:block}
+.win .wn{font-size:28px;font-weight:700;margin-top:18px}
+.voters{display:flex;gap:44px;margin-top:22px}
+.voter{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:15px;font-weight:600}
+.voter .avatar{width:64px;height:64px;font-size:24px}
+.vbadge{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff}
+.vbadge svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.win .btn{width:300px;height:52px;margin-top:auto;margin-bottom:28px;font-size:18px}
+
+.toast{bottom:90px}
+.chead,.crow,.cfoot{grid-template-columns:170px 1fr}
+.vpw{position:relative;min-width:0}
+.vp{overflow:hidden;min-width:0}
+.trk{display:flex;transition:transform .3s ease-in-out}
+.trk>*{flex:0 0 var(--cw)}
+.chev{position:absolute;top:50%;margin-top:-22px;width:40px;height:40px;border-radius:50%;background:#fff;box-shadow:0 1px 5px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;z-index:3}
+.chev.l{left:2px}.chev.r{right:2px}
+.chev svg{width:22px;height:22px;fill:none;stroke:var(--teal);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.vb.dim{opacity:.4}
+.vmap{align-self:flex-start;display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 10px;border:1.5px solid var(--teal);border-radius:8px;background:#fff;color:#222;font-size:14px;font-weight:500;white-space:nowrap}
+.vmap svg{width:16px;height:16px;fill:none;stroke:var(--teal);stroke-width:2;stroke-linejoin:round;flex:none}
+.stay{pointer-events:auto;cursor:pointer}
+.pop{position:absolute;z-index:7;width:290px;background:#fff;border-radius:12px;box-shadow:0 4px 18px rgba(0,0,0,.35);padding:10px;display:flex;gap:12px}
+.pop img{width:88px;height:88px;border-radius:8px;object-fit:cover;flex:none}
+.pop .pi{flex:1;display:flex;flex-direction:column;justify-content:space-between;min-width:0}
+.pop b{font-size:15px;font-weight:700;line-height:1.2}
+.pop .pp{font-size:14px;color:#444}
+.pop .rt{display:flex;justify-content:space-between;align-items:center;font-size:15px;font-weight:600}
+.pop .rt svg{width:18px;height:18px;fill:#F59E0B}
+.dropbtn{touch-action:none;user-select:none}
+.tt{position:absolute;top:34px;right:92px;z-index:8;background:#222;color:#fff;font-size:14px;font-weight:500;padding:9px 14px;border-radius:8px;white-space:nowrap}
+.tt::after{content:"";position:absolute;right:-6px;top:50%;margin-top:-6px;border:6px solid transparent;border-left-color:#222;border-right:0}
+.pinmk.bounce{animation:bnc .45s ease-out}
+@keyframes bnc{0%{transform:translate(-50%,-92%) translateY(-34px)}45%{transform:translate(-50%,-92%) translateY(0)}65%{transform:translate(-50%,-92%) translateY(-12px)}85%{transform:translate(-50%,-92%) translateY(0)}100%{transform:translate(-50%,-92%)}}
+.circle{background:rgba(220,38,38,.12)}
+.chip{position:absolute;transform:translate(-50%,-50%);background:#fff;color:#222;font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;box-shadow:0 1px 4px rgba(0,0,0,.35);white-space:nowrap;pointer-events:none}
+.banner{position:absolute;top:0;left:0;right:0;height:44px;background:#fff;border-bottom:1px solid var(--line);color:var(--teal);font-weight:600;font-size:15px;display:flex;align-items:center;justify-content:center}
+.rec{padding-top:44px}
+.rvp{width:600px;overflow:hidden;border-radius:12px}
+.rtrk{display:flex;transition:transform .3s ease-in-out}
+.rtrk .rcard{flex:0 0 600px;border-radius:0}
+.dots{align-items:center}
+.dots .btn{margin-left:12px}
+select:is(.sel-dd,.swap,.dd){-webkit-appearance:none;appearance:none;background-color:#fff;background-image:url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23222' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;background-repeat:no-repeat;background-position:right 14px center !important;background-repeat:no-repeat !important;padding-right:38px !important}
+.calc{align-items:center;justify-content:center;gap:24px}
+.spin{width:56px;height:56px;border-radius:50%;border:5px solid rgba(15,118,110,.2);border-top-color:var(--teal);animation:rot .9s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.ct2{font-size:20px;font-weight:600}
+.dropbtn{width:auto;padding:0 16px;gap:10px;font-size:15px;font-weight:500;color:#222}
+.dropbtn svg{flex:none}
+.tt{top:92px;right:24px}
+.tt::after{right:auto;left:auto;right:28px;top:-6px;margin:0;border:6px solid transparent;border-bottom-color:#222;border-top:0;border-left-color:transparent}
+.mapsw{color:#222}
+.maphead{position:absolute;top:24px;left:24px;z-index:6;height:44px;padding:0 18px;border-radius:8px;background:rgba(0,0,0,.55);color:#fff;font-size:16px;font-weight:600;display:flex;align-items:center}
+.prow .tot{text-align:right}
+.prow .tot small{display:block;font-size:12px;font-weight:500;color:var(--muted)}
+.chead,.crow,.cfoot{grid-template-columns:190px 1fr}
+.vmap{font-size:13px;padding:0 9px;gap:5px}
+.rl{display:flex;align-items:center;gap:5px;font-size:15px;color:#444;margin-top:3px}
+.rl svg{width:15px;height:15px;fill:#F59E0B;flex:none}
+.banner .sel-dd{position:absolute;right:24px;top:2px;height:38px}
+.swapbtn{text-align:left;font-size:14px;background-image:url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23222' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;background-repeat:no-repeat !important;background-position:right 14px center !important;background-color:#fff;padding:0 38px 0 8px !important;cursor:pointer}
+.scrim2{position:absolute;inset:0;z-index:30}
+.swapmenu{position:absolute;z-index:31;background:#fff;border-radius:8px;box-shadow:0 4px 18px rgba(0,0,0,.28);padding:6px}
+.swapmenu .none{padding:10px 10px;font-size:14px;color:#6B7280;opacity:.7;background:#F3F4F6;border-radius:6px}
+.swapmenu .lnk{display:block;padding:10px 10px 6px;font-size:14px;font-weight:600;color:var(--teal);text-decoration:underline;text-align:left}
+.sel-dd,.banner .sel-dd{color:#000}
+</style>
+</head>
+<body>
+<div id="wrap"><div id="stage"><div id="app"></div></div></div>
+<script>
+const STAYS=[
+ {id:1,name:'Trastevere Loft',total:612,pp:204,bed:2,clean:'4.8',safe:'Very safe',canc:'Free until 5 days before',am:'Wi-Fi, kitchen, A/C',rev:'4.8 (212)',sum:'Guests love the quiet street and rooftop view. A few mention steep stairs.',loc:'Trastevere',mx:330,my:540},
+ {id:2,name:'Colosseum Flat',total:540,pp:180,bed:1,clean:'4.8',safe:'Safe',canc:'Free until 5 days before',am:'Wi-Fi, kitchen',rev:'4.6 (98)',sum:'Great value and walkable to the sights. Some noise at night.',loc:'Near the Colosseum',mx:770,my:410},
+ {id:3,name:'Monti Garden Studio',total:690,pp:230,bed:2,clean:'4.8',safe:'Very safe',canc:'Free until 5 days before',am:'Wi-Fi, kitchen, A/C, washer',rev:'4.9 (156)',sum:'Spotless and spacious, with a lovely garden. Pricier than nearby options.',loc:'Monti',mx:610,my:290},
+ {id:4,name:'Testaccio Family Flat',total:575,pp:192,bed:3,clean:'4.7',safe:'Safe',canc:'Free until 5 days before',am:'Wi-Fi, kitchen, washer',rev:'4.7 (134)',sum:'Roomy and great for families, close to food markets. Some street noise.',loc:'Testaccio',mx:520,my:690},
+ {id:5,name:'Vatican Terrace Suite',total:720,pp:240,bed:2,clean:'4.9',safe:'Very safe',canc:'Non-refundable',am:'Wi-Fi, kitchen, A/C, terrace',rev:'4.9 (87)',sum:'Stunning terrace and quiet nights. Priciest option, and a bit far from the center.',loc:'Vatican',mx:200,my:250},
+ {id:6,name:'Navona Courtyard Studio',total:594,pp:198,bed:1,clean:'4.5',safe:'Safe',canc:'Free until 2 days before',am:'Wi-Fi, kitchen, A/C',rev:'4.5 (61)',sum:'Bright, quiet courtyard in the middle of the old town. Compact, with steep stairs.',loc:'Navona',mx:430,my:390}
+];
+const byId=Object.fromEntries(STAYS.map(s=>[s.id,s]));
+const PEOPLE=['Enzo','Anna','Alessia'];
+const SHARE=['Anna','Alessia'];
+const AVC={Enzo:'#E9C27E',Anna:'#A9C4D0',Alessia:'#D3B0A8'};
+const PX=12;
+const RATING={1:4.8,2:4.6,3:4.9,4:4.7,5:4.9,6:4.5};
+const RATE=1.08;
+
+const S={swapMenu:null,screen:'explore',saved:new Set([1,2]),off:0,anim:false,modal:false,popId:null,tip:false,tipSeen:false,toast:'',sel:new Set(),cmp:[],cur:'EUR',votes:{},
+ share:false,shareSel:new Set(),map:false,drop:false,pending:null,draft:{mode:'walk',min:5},pin:null,
+ backTo:'prospects',rec:{ids:[],i:0,votes:{}}};
+
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const photoCache={};
+function photo(id){return `assets/stay${id}.jpg`}
+function photoOld(id){
+ if(photoCache[id])return photoCache[id];
+ const P=[['#F6C177','#E08A8A'],['#9CCFD8','#4F8FA3'],['#F2D9B5','#C48A8A'],['#E8C39E','#8FA070'],['#C9B3E6','#7D7A99'],['#A8D5BA','#4C9A8A']][(id-1)%6];
+ const r=rng(id*91+3);let b='';
+ let x=-10;
+ while(x<400){const w=40+r()*50,h=60+r()*110;b+=`<rect x='${x}' y='${260-h}' width='${w}' height='${h}' fill='rgba(34,34,34,${.14+r()*.14})'/>`;
+  for(let k=0;k<4;k++)b+=`<rect x='${x+8+(k%2)*(w/2-6)}' y='${260-h+12+Math.floor(k/2)*20}' width='9' height='12' fill='rgba(255,255,255,.55)'/>`;x+=w+4}
+ const svg=`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 260' preserveAspectRatio='xMidYMid slice'><defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0' stop-color='${P[0]}'/><stop offset='1' stop-color='${P[1]}'/></linearGradient></defs><rect width='400' height='260' fill='url(#g)'/><circle cx='${60+r()*280}' cy='60' r='26' fill='rgba(255,255,255,.55)'/>${b}</svg>`;
+ return photoCache[id]='data:image/svg+xml;utf8,'+encodeURIComponent(svg);
+}
+const fmt=n=>S.cur==='EUR'?'€'+n:'$'+Math.round(n*RATE);
+const av=(n,sz=36)=>`<div class="avatar" style="width:${sz}px;height:${sz}px;background:${AVC[n]};font-size:${Math.round(sz*.4)}px">${n[0]}</div>`;
+const I={
+ heart:'<svg viewBox="0 0 24 24"><path d="M12 20.5C5 15.8 2.5 12.4 2.5 9a4.8 4.8 0 0 1 9.5-1 4.8 4.8 0 0 1 9.5 1c0 3.4-2.5 6.8-9.5 11.5z"/></svg>',
+ check:'<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+ cross:'<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+ back:'<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
+ left:'<svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg>',
+ right:'<svg viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg>',
+ warn:'<svg viewBox="0 0 24 24"><path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/></svg>',
+ drop:'<svg viewBox="0 0 32 32" width="34" height="34"><path d="M16 1.5c-4.1 0-7.2 3-7.2 6.9 0 4.6 7.2 11.6 7.2 11.6s7.2-7 7.2-11.6C23.2 4.5 20.1 1.5 16 1.5z" fill="#DC2626"/><circle cx="16" cy="8.3" r="2.5" fill="#fff"/><rect x="8" y="17" width="16" height="12" rx="4" fill="#fff" stroke="#222" stroke-width="1.6"/><path d="M13.3 18v6M16 18v6M18.7 18v6" stroke="#222" stroke-width="1.4" stroke-linecap="round"/><path d="M8.5 21.5c-2.2 0-3 1.6-2.3 3.2l2 3" fill="none" stroke="#222" stroke-width="1.6" stroke-linecap="round"/></svg>',
+ pin:'<svg viewBox="0 0 36 48"><path d="M18 2C10 2 4 8 4 16c0 10 14 28 14 28s14-18 14-28C32 8 26 2 18 2z" fill="#DC2626" stroke="#fff" stroke-width="2"/><circle cx="18" cy="16" r="5" fill="#fff"/></svg>'
+};
+const TABS=[['explore','Explore','<circle cx="11" cy="11" r="7"/><path d="M16.5 16.5L21 21"/>'],['prospects','Contenders','<path d="M12 20.5C5 15.8 2.5 12.4 2.5 9a4.8 4.8 0 0 1 9.5-1 4.8 4.8 0 0 1 9.5 1c0 3.4-2.5 6.8-9.5 11.5z"/>'],['trips','Trips','<rect x="4" y="8" width="16" height="12" rx="2"/><path d="M9 8V6a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>'],['messages','Messages','<path d="M4 5h16v11H9l-5 4z"/>'],['profile','Profile','<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>']];
+const tabbar=a=>`<div class="tabs">${TABS.map(t=>`<button class="tab ${t[0]===a?'on':''}" data-a="tab" data-v="${t[0]}"><svg viewBox="0 0 24 24">${t[2]}</svg>${t[1]}</button>`).join('')}</div>`;
+
+let mapCache='';
+function mapSvg(){
+ if(mapCache)return mapCache;
+ const r=rng(11),o=[`<rect width="1194" height="834" fill="#6f6c5c"/>`];
+ const rx=y=>470+170*Math.sin(y/190)+60*Math.sin(y/70);
+ const roofs=['#b5715a','#a9654f','#c28b6c','#9a8f84','#b3aaa0','#d2c3ac','#8c7f73','#c47a5f','#a0a09a'];
+ for(let y=0;y<834;y+=24)for(let x=0;x<1194;x+=24){
+  if(Math.abs(x-rx(y))<56||r()<.1)continue;
+  const w=12+(r()*9|0),h=12+(r()*9|0),px=x+(r()*3|0),py=y+(r()*3|0),c=roofs[r()*roofs.length|0];
+  o.push(`<rect x="${px+2}" y="${py+2}" width="${w}" height="${h}" fill="#000" opacity=".28"/><rect x="${px}" y="${py}" width="${w}" height="${h}" fill="${c}"/>`);
+  if(r()<.35)o.push(`<line x1="${px}" y1="${py+h/2}" x2="${px+w}" y2="${py+h/2}" stroke="#000" stroke-opacity=".15"/>`);
+ }
+ for(let x=118;x<1194;x+=120)o.push(`<line x1="${x}" y1="0" x2="${x}" y2="834" stroke="#fff" stroke-opacity=".16" stroke-width="2"/>`);
+ for(let y=118;y<834;y+=120)o.push(`<line x1="0" y1="${y}" x2="1194" y2="${y}" stroke="#fff" stroke-opacity=".16" stroke-width="2"/>`);
+ for(let i=0;i<9;i++)o.push(`<line x1="${r()*1194|0}" y1="${r()*834|0}" x2="${r()*1194|0}" y2="${r()*834|0}" stroke="#fff" stroke-opacity=".2" stroke-width="2"/>`);
+ [[880,660,110,70],[150,420,70,50],[960,150,90,60],[690,560,60,40],[1060,430,70,60]].forEach(p=>{
+  o.push(`<ellipse cx="${p[0]}" cy="${p[1]}" rx="${p[2]}" ry="${p[3]}" fill="#46663a"/>`);
+  for(let k=0;k<70;k++){const a=r()*6.283,d=Math.sqrt(r());o.push(`<circle cx="${(p[0]+Math.cos(a)*p[2]*d).toFixed(0)}" cy="${(p[1]+Math.sin(a)*p[3]*d).toFixed(0)}" r="${3+r()*2}" fill="${r()<.5?'#3b5a2f':'#5a7d44'}" opacity=".8"/>`)}
+ });
+ let pts='';for(let y=-20;y<=860;y+=20)pts+=`${rx(y).toFixed(0)},${y} `;
+ o.push(`<polyline points="${pts}" fill="none" stroke="#586648" stroke-width="46" stroke-linecap="round" stroke-linejoin="round"/>`,`<polyline points="${pts}" fill="none" stroke="#6f7d55" stroke-width="30" stroke-linecap="round" stroke-linejoin="round" opacity=".8"/>`);
+ o.push(`<rect width="1194" height="834" fill="#3a3a30" opacity=".3"/>`);
+ [['Vaticano',200,292],['Colosseo',770,452],['Monti',610,328],['Trastevere',330,578]].forEach(l=>o.push(`<text x="${l[1]}" y="${l[2]}" text-anchor="middle" font-family="Figtree,sans-serif" font-size="11" font-weight="600" letter-spacing="1.5" fill="#D1D5DB" stroke="#000" stroke-opacity=".55" stroke-width="3" paint-order="stroke">${l[0]}</text>`));
+ return mapCache=`<svg class="bg" viewBox="0 0 1194 834" xmlns="http://www.w3.org/2000/svg">${o.join('')}</svg>`;
+}
+const radius=()=>S.pin?S.pin.min*PX:0;
+const dist=s=>S.pin?Math.hypot(s.mx-S.pin.x,s.my-S.pin.y):0;
+const inside=s=>dist(s)<=radius();
+const distText=s=>{const m=Math.max(1,Math.round(dist(s)/PX));return m+' min '+(S.pin.mode==='walk'?'walk':'by '+S.pin.mode)};
+const disp=()=>S.cmp.map(id=>byId[id]).filter(s=>!S.pin||inside(s));
+
+function explore(){
+ return `<div class="screen"><div class="ehead"><h1>Stays in Rome</h1></div>
+ <div class="grid">${STAYS.map(s=>`<div class="card scard"><div class="ph"><img src="${photo(s.id)}"><button class="heart ${S.saved.has(s.id)?'on':''}" data-a="heart" data-v="${s.id}">${I.heart}</button></div>
+ <div class="info"><div class="nm">${s.name}</div><div class="ct">Rome</div><div class="pr"><b>${fmt(Math.round(s.total/3))}</b> / night</div></div></div>`).join('')}</div>
+ ${tabbar('explore')}</div>`;
+}
+function prospects(){
+ const n=S.sel.size,list=STAYS.filter(s=>S.saved.has(s.id));
+ return `<div class="screen"><div class="phead"><div><h1>Rome, 3 nights</h1><button class="btn sec sm">Invite others</button></div>
+ <div class="avs">${PEOPLE.map(p=>av(p,44)).join('')}</div></div>
+ <div class="plist keep">${list.map(s=>`<div class="card prow"><label class="sel"><input type="checkbox" data-c="sel" data-v="${s.id}" ${S.sel.has(s.id)?'checked':''}>Select</label>
+ <div class="pph"><img src="${photo(s.id)}"></div><div class="pn"><b>${s.name}</b><span>12–15 Jun</span></div><div class="tot">${fmt(s.total)}<small>Total</small></div></div>`).join('')}</div>
+ <div class="pbar"><button class="btn pri" data-a="cmpsel" ${n?'':'disabled'}>Compare selected (${n})</button><button class="btn sec" data-a="cmpall" ${list.length?'':'disabled'}>Compare all</button></div>
+ ${tabbar('prospects')}</div>`;
+}
+const ROWS=[
+ ['Total price (incl. fees)',s=>fmt(s.total),s=>s.total],
+ ['Price per person',s=>fmt(s.pp),s=>s.pp],
+ ['Bedrooms',s=>s.bed,s=>s.bed],
+ ['Cleanliness',s=>s.clean,s=>s.clean],
+ ['Safety of area',s=>s.safe,s=>s.safe],
+ ['Cancellation policy',s=>s.canc,s=>s.canc],
+ ['Amenities',s=>s.am,s=>s.am],
+ ['Reviews',s=>s.rev,s=>s.rev],
+ ['Review summary',s=>'“'+s.sum+'”',s=>s.sum]
+];
+function compare(){
+ const d=disp(),n=d.length;
+ S.off=Math.max(0,Math.min(S.off,n-3));
+ const allVoted=S.cmp.length>0&&S.cmp.every(id=>S.votes[id]);
+ const top=`<div class="ctop"><button class="back" data-a="back">${I.back}${S.backTo==='recipient'?'Back':'Contenders'}</button>
+ <select class="sel-dd" data-c="cur"><option ${S.cur==='EUR'?'selected':''}>EUR</option><option ${S.cur==='USD'?'selected':''}>USD</option></select>
+ <span class="voted">${allVoted?2:1} of 3 voted</span><button class="btn pri sm" data-a="share">Share</button></div>`;
+ let body;
+ if(!n){
+  body=`<div class="empty">No stays inside this area.<button class="btn sec sm" data-a="rmpin">Remove pin filter</button></div>`;
+ }else{
+  const tr=`width:${Math.max(n,3)/3*100}%;--cw:${100/n}%;transform:translateX(-${S.off*100/n}%)`;
+  const vp=c=>`<div class="vp"><div class="trk" data-n="${n}" style="${tr}">${c}</div></div>`;
+  const swapOpts=STAYS.filter(x=>!S.cmp.includes(x.id));
+  const cells=d.map(s=>`<div class="hc"><div class="hcard"><div class="hph"><img src="${photo(s.id)}">${s.id===2?'<span class="hot">Hot</span>':''}</div><div class="hn">${s.name}</div>
+  ${swapOpts.length?`<select class="swap" data-c="swap" data-v="${s.id}"><option value="" selected disabled hidden>Swap stay</option>${swapOpts.map(x=>`<option value="${x.id}">${x.name}</option>`).join('')}</select>`:`<button class="swap swapbtn" data-a="swapempty">Swap stay</button>`}</div></div>`).join('');
+  const head=`<div class="chead"><div></div><div class="vpw">${vp(cells)}${S.off>0?`<button class="chev l" data-a="slide" data-v="-1">${I.left}</button>`:''}${S.off<n-3?`<button class="chev r" data-a="slide" data-v="1">${I.right}</button>`:''}</div></div>`;
+  const vis=d.slice(S.off,S.off+3);
+  const rows=ROWS.map(r=>{
+   const differ=new Set(vis.map(r[2])).size>1;
+   return `<div class="crow ${differ?'diff':''}"><div class="cl">${r[0]}</div>${vp(d.map(s=>`<div class="cc">${r[1](s)}</div>`).join(''))}</div>`;
+  }).join('');
+  const lDiff=new Set(vis.map(s=>s.loc)).size>1;
+  const loc=`<div class="crow ${S.pin?'locpin':lDiff?'diff':''}"><div class="cl">Location<button class="vmap" data-a="maptoggle"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>Compare on map</button></div>
+  ${vp(d.map(s=>S.pin?`<div class="cc"><div class="d"><b>${distText(s)}</b><span>${s.loc}</span></div></div>`:`<div class="cc">${s.loc}</div>`).join(''))}
+  ${S.pin?`<button class="rmx" data-a="rmpin">${I.cross}</button>`:''}</div>`;
+  const foot=`<div class="cfoot"><div></div>${vp(d.map(s=>{const v=S.votes[s.id];return `<div class="vc"><button class="vb y ${v==='y'?'on':v==='n'?'dim':''}" data-a="vote" data-v="${s.id}:y">${I.check}</button><button class="vb n ${v==='n'?'on':v==='y'?'dim':''}" data-a="vote" data-v="${s.id}:n">${I.cross}</button></div>`}).join(''))}</div>`;
+  body=head+`<div class="tbody">${rows}${loc}</div>`+foot;
+ }
+ return `<div class="screen">${top}<div class="cmp-scroll keep">${body}</div></div>`;
+}
+function mapView(){
+ const list=STAYS.filter(s=>S.saved.has(s.id));
+ const pins=list.map(s=>`<div class="stay ${S.pin&&!inside(s)?'gray':''}" data-a="stay" data-v="${s.id}" style="left:${s.mx}px;top:${s.my}px"><div class="box"><img src="${photo(s.id)}"><div class="t"><b>${s.name}</b><span>${fmt(s.total)}</span></div></div><div class="tip"></div></div>`).join('');
+ const p=S.pending||S.pin;
+ const bounce=S.pending&&S.pending.bounce;if(bounce)S.pending.bounce=false;
+ let circ='';
+ if(S.pin){
+  const R=radius(),m=S.pin.mode;
+  circ=`<div class="circle" style="left:${S.pin.x}px;top:${S.pin.y}px;width:${R*2}px;height:${R*2}px"></div><div class="chip" style="left:${S.pin.x}px;top:${Math.max(16,S.pin.y-R)}px">${S.pin.min} min ${m==='walk'?'walk':'by '+m}</div>`;
+ }
+ let pop='';
+ if(S.popId&&S.saved.has(S.popId)){
+  const s=byId[S.popId];
+  pop=`<div class="pop" data-a="noop" style="left:${Math.min(s.mx+70,1194-300)}px;top:${Math.max(10,s.my-100)}px"><img src="${photo(s.id)}"><div class="pi"><b>${s.name}</b><div class="pp">${fmt(s.pp)} per person</div><div class="rt"><svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6.2 6.6.8-4.9 4.6 1.3 6.7L12 17.4l-5.9 3.4 1.3-6.7L2.5 9.5l6.6-.8z"/></svg><span>${RATING[s.id]}</span></div></div></div>`;
+ }
+ return `<div class="screen"><div class="map" data-a="mapclick">${mapSvg()}${circ}${pins}${p?`<div class="pinmk ${bounce?'bounce':''}" style="left:${p.x}px;top:${p.y}px">${I.pin}</div>`:''}${pop}
+ <div class="maphead">Rome · 12-15 Jun · 3 guests</div><button class="mapbtn dropbtn" data-a="noop">${I.drop}<span>Hold to drop pin</span></button>${S.tip?'<div class="tt">hold and drag onto the map</div>':''}
+ <button class="mapbtn mapsw" data-a="maptoggle"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#0F766E" stroke-width="2" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 10v10"/></svg>Table view</button></div></div>`;
+}
+function recipient(){
+ const r=S.rec,ids=r.ids,i=r.i,all=ids.every(id=>r.votes[id]);
+ const cards=ids.map(id=>{const s=byId[id],v=r.votes[id];
+  return `<div class="card rcard"><div class="rph"><img src="${photo(s.id)}"></div><div class="rb"><div class="rn">${s.name}</div><div class="rl"><svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6.2 6.6.8-4.9 4.6 1.3 6.7L12 17.4l-5.9 3.4 1.3-6.7L2.5 9.5l6.6-.8z"/></svg>${RATING[s.id]} · ${S.pin?distText(s)+' from pin':s.loc}</div><div class="rp"><b>${fmt(s.pp)}</b> per person</div>
+ ${s.id===3?`<div class="warn">${I.warn}Price went 10% up since last saved.</div>`:''}<div class="rs">${s.sum}</div></div>
+ <div class="rvote"><button class="vb y ${v==='y'?'on':v==='n'?'dim':''}" data-a="recvote" data-v="y">${I.check}</button><button class="vb n ${v==='n'?'on':v==='y'?'dim':''}" data-a="recvote" data-v="n">${I.cross}</button></div>
+ <div class="rfull"><button class="btn pri" data-a="seefull">See full comparison</button></div></div>`}).join('');
+ return `<div class="screen rec"><div class="banner">Viewing as Alessia<select class="sel-dd" data-c="cur"><option ${S.cur==='EUR'?'selected':''}>EUR</option><option ${S.cur==='USD'?'selected':''}>USD</option></select></div><div class="rwrap"><button class="rarrow" data-a="recnav" data-v="-1" ${i===0?'disabled':''}>${I.left}</button>
+ <div class="rvp"><div class="rtrk" style="transform:translateX(-${i*600}px)">${cards}</div></div>
+ <button class="rarrow" data-a="recnav" data-v="1" ${i===ids.length-1?'disabled':''}>${I.right}</button></div>
+ <div class="dots">${ids.map(id=>`<i class="${r.votes[id]?'on':''}"></i>`).join('')}${all?'<button class="btn sec sm" data-a="submit">Submit</button>':''}</div></div>`;
+}
+function winner(){
+ const r=S.rec,yes=r.ids.find(id=>r.votes[id]==='y');
+ const allNo=yes===undefined;
+ const s=byId[allNo?2:yes];
+ const votes=allNo?{Enzo:'y',Anna:'y',Alessia:'n'}:{Enzo:'y',Anna:'n',Alessia:'y'};
+ return `<div class="screen win"><h1>Winner</h1><div class="wph" style="position:relative"><img src="${photo(s.id)}">${s.id===2?'<span class="hot" style="top:12px;left:12px;font-size:14px;padding:4px 12px">Hot</span>':''}</div><div class="wn">${s.name}</div>
+ <div class="voters">${PEOPLE.map(p=>`<div class="voter">${av(p,64)}${p}<div class="vbadge" style="background:${votes[p]==='y'?'var(--green)':'var(--red)'}">${votes[p]==='y'?I.check:I.cross}</div></div>`).join('')}</div>
+ <button class="btn pri">Book now</button></div>`;
+}
+function calc(){return `<div class="screen calc"><div class="spin"></div><div class="ct2">Calculating your votes...</div></div>`}
+function shareModal(){
+ const all=SHARE.every(p=>S.shareSel.has(p));
+ return `<div class="scrim" data-a="scrim" data-v="share"><div class="modal"><h2>Share with</h2><div class="plist2">
+ <label class="person"><input type="checkbox" data-c="share" data-v="all" ${all?'checked':''}>Everyone</label>
+ ${SHARE.map(p=>`<label class="person"><input type="checkbox" data-c="share" data-v="${p}" ${S.shareSel.has(p)?'checked':''}>${av(p,38)}${p}</label>`).join('')}</div>
+ <div class="mact"><button class="btn pri" data-a="send" ${S.shareSel.size?'':'disabled'}>Send</button></div></div></div>`;
+}
+function distModal(){
+ const d=S.draft;
+ return `<div class="scrim"><div class="modal"><h2>Distance from pin</h2>
+ <select class="dd" data-c="mode">${['walk','bus','metro','train'].map(m=>`<option value="${m}" ${d.mode===m?'selected':''}>${m[0].toUpperCase()+m.slice(1)}</option>`).join('')}</select>
+ <div class="stepper"><button class="sb" data-a="step" data-v="-1" ${d.min<=5?'disabled':''}>−</button><span class="v">${d.min} min</span><button class="sb" data-a="step" data-v="1" ${d.min>=60?'disabled':''}>+</button></div>
+ <div class="mact"><button class="btn sec" data-a="cancel">Cancel</button><button class="btn pri" data-a="save">Save</button></div></div></div>`;
+}
+
+const app=document.getElementById('app');
+function render(){
+ const keeps=[...document.querySelectorAll('.keep')].map(e=>e.scrollTop);
+ let h='';
+ if(S.screen==='explore')h=explore();
+ else if(S.screen==='prospects')h=prospects();
+ else if(S.screen==='compare')h=S.map?mapView():compare();
+ else if(S.screen==='recipient')h=recipient();
+ else if(S.screen==='calc')h=calc();
+ else h=winner();
+ if(S.screen==='compare'&&S.share)h+=shareModal();
+ if(S.screen==='compare'&&!S.map&&S.swapMenu){const m=S.swapMenu;h+=`<div class="scrim2" data-a="menuclose"></div><div class="swapmenu" style="left:${m.x}px;top:${m.y}px;width:${m.w}px"><div class="none">No other contenders to swap in</div>${S.pin?'<button class="lnk" data-a="clearpin">Clear pin to see all stays</button>':'<button class="lnk" data-a="addmore">Add more stays</button>'}</div>`}
+ if(S.screen==='compare'&&S.pending&&S.modal)h+=distModal();
+ if(S.toast)h+=`<div class="toast">${S.toast}</div>`;
+ app.innerHTML=h;
+ document.querySelectorAll('.keep').forEach((e,i)=>{if(keeps[i])e.scrollTop=keeps[i]});
+}
+let toastT;
+function toast(m){S.toast=m;clearTimeout(toastT);toastT=setTimeout(()=>{S.toast='';render()},1800)}
+
+const nameList=a=>a.length<2?a.join(''):a.slice(0,-1).join(', ')+' and '+a[a.length-1];
+function slideRec(){const t=document.querySelector('.rtrk');if(t)t.style.transform=`translateX(-${S.rec.i*600}px)`;S.anim=true;setTimeout(()=>{S.anim=false;render()},320)}
+function goCompare(ids){S.cmp=ids.slice();S.off=0;S.screen='compare';S.backTo='prospects';S.map=false}
+app.addEventListener('click',e=>{
+ const t=e.target.closest('[data-a]');if(!t||t.disabled)return;
+ const a=t.dataset.a,v=t.dataset.v;
+ switch(a){
+  case 'noop':return;
+  case 'swapempty':{const r=t.getBoundingClientRect(),st=document.getElementById('stage').getBoundingClientRect(),k=st.width/1194;
+   S.swapMenu={x:(r.left-st.left)/k,y:(r.bottom-st.top)/k+6,w:r.width/k};break}
+  case 'menuclose':S.swapMenu=null;break;
+  case 'addmore':S.swapMenu=null;S.screen='explore';break;
+  case 'clearpin':S.swapMenu=null;S.pin=null;break;
+  case 'tab':if(v==='explore'||v==='prospects')S.screen=v;break;
+  case 'heart':{const id=+v;
+   if(S.saved.has(id)){S.saved.delete(id);S.sel.delete(id);toast('Removed from contenders')}
+   else{S.saved.add(id);toast('Added to contenders')}break}
+  case 'cmpsel':goCompare(STAYS.filter(s=>S.saved.has(s.id)&&S.sel.has(s.id)).map(s=>s.id));break;
+  case 'cmpall':goCompare(STAYS.filter(s=>S.saved.has(s.id)).map(s=>s.id));break;
+  case 'back':S.screen=S.backTo;break;
+  case 'slide':{if(S.anim)return;S.swapMenu=null;S.off+=+v;S.anim=true;
+   document.querySelectorAll('.trk').forEach(el=>{el.style.transform=`translateX(-${S.off*100/el.dataset.n}%)`});
+   setTimeout(()=>{S.anim=false;render()},320);return}
+  case 'share':S.share=true;S.shareSel=new Set();break;
+  case 'scrim':if(e.target!==t)return;S.share=false;break;
+  case 'send':{
+   const names=SHARE.filter(p=>S.shareSel.has(p));
+   S.share=false;S.rec={ids:STAYS.filter(s=>S.saved.has(s.id)).map(s=>s.id),i:0,votes:{}};S.screen='recipient';S.anim=false;
+   toast('Shared with '+nameList(names));break}
+  case 'seefull':S.screen='compare';S.backTo='recipient';S.map=false;S.off=0;break;
+  case 'recnav':if(S.anim)return;S.rec.i+=+v;slideRec();return;
+  case 'recvote':{
+   const r=S.rec;r.votes[r.ids[r.i]]=v;toast('Vote saved');
+   setTimeout(()=>{if(S.screen==='recipient'&&!S.anim&&S.rec.i<S.rec.ids.length-1){S.rec.i++;slideRec()}},500);
+   break}
+  case 'submit':S.screen='calc';setTimeout(()=>{if(S.screen==='calc'){S.screen='winner';render()}},1500);break;
+  case 'vote':{const [id,x]=v.split(':');S.votes[id]=x;toast('Vote saved');break}
+  case 'maptoggle':
+   S.map=!S.map;S.pending=null;S.popId=null;
+   if(S.map&&!S.tipSeen){S.tipSeen=true;S.tip=true;setTimeout(()=>{S.tip=false;const el=document.querySelector('.tt');if(el)el.remove()},3500)}
+   break;
+  case 'stay':S.popId=S.popId===+v?null:+v;break;
+  case 'mapclick':if(S.popId==null)return;S.popId=null;break;
+  case 'step':S.draft.min=Math.min(60,Math.max(5,S.draft.min+5*+v));break;
+  case 'save':S.pin={x:S.pending.x,y:S.pending.y,mode:S.draft.mode,min:S.draft.min};S.pending=null;S.modal=false;break;
+  case 'cancel':S.pending=null;S.modal=false;break;
+  case 'rmpin':S.pin=null;break;
+  default:return;
+ }
+ render();
+});
+app.addEventListener('change',e=>{
+ const t=e.target.closest('[data-c]');if(!t)return;
+ const c=t.dataset.c,v=t.dataset.v;
+ if(c==='sel'){t.checked?S.sel.add(+v):S.sel.delete(+v)}
+ else if(c==='share'){
+  if(v==='all')S.shareSel=t.checked?new Set(SHARE):new Set();
+  else t.checked?S.shareSel.add(v):S.shareSel.delete(v);
+ }
+ else if(c==='cur')S.cur=t.value;
+ else if(c==='mode')S.draft.mode=t.value;
+ else if(c==='swap'){const i=S.cmp.indexOf(+v);if(i>-1&&t.value)S.cmp[i]=+t.value}
+ render();
+});
+
+app.addEventListener('pointerdown',e=>{
+ const b=e.target.closest('.dropbtn');if(!b)return;
+ e.preventDefault();
+ const tt=document.querySelector('.tt');if(tt){tt.remove();S.tip=false}
+ const map=document.querySelector('.map');
+ let last=e;
+ const track=ev=>{last=ev};
+ const pos=ev=>{const r=map.getBoundingClientRect(),k=r.width/1194;return {x:(ev.clientX-r.left)/k,y:(ev.clientY-r.top)/k}};
+ const end=()=>{clearTimeout(timer);window.removeEventListener('pointermove',track);window.removeEventListener('pointerup',end);window.removeEventListener('pointercancel',end)};
+ const timer=setTimeout(()=>{
+  window.removeEventListener('pointermove',track);window.removeEventListener('pointerup',end);window.removeEventListener('pointercancel',end);
+  const g=document.createElement('div');g.className='pinmk dragpin';g.innerHTML=I.pin;map.appendChild(g);
+  const place=ev=>{const p=pos(ev);g.style.left=p.x+'px';g.style.top=p.y+'px'};
+  place(last);
+  const up=ev=>{
+   window.removeEventListener('pointermove',place);window.removeEventListener('pointerup',up);window.removeEventListener('pointercancel',up);
+   g.remove();
+   const p=pos(ev);
+   if(ev.type==='pointerup'&&p.x>=0&&p.y>=0&&p.x<=1194&&p.y<=834){
+    S.pending={x:p.x,y:p.y,bounce:true};S.modal=false;S.popId=null;S.draft={mode:'walk',min:5};render();
+    setTimeout(()=>{if(S.pending){S.modal=true;render()}},500);
+   }
+  };
+  window.addEventListener('pointermove',place);window.addEventListener('pointerup',up);window.addEventListener('pointercancel',up);
+ },500);
+ window.addEventListener('pointermove',track);window.addEventListener('pointerup',end);window.addEventListener('pointercancel',end);
+});
+
+function fit(){document.getElementById('stage').style.transform=`scale(${Math.min(innerWidth/1194,innerHeight/834,1)})`}
+addEventListener('resize',fit);fit();
+render();
+</script>
+</body>
+</html>
