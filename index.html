@@ -393,7 +393,7 @@ function recipient(){
  const r=S.rec,ids=r.ids,i=r.i,all=ids.every(id=>r.votes[id]);
  const cards=ids.map(id=>{const s=byId[id],v=r.votes[id];
   return `<div class="card rcard"><div class="rph"><img src="${photo(s.id)}"></div><div class="rb"><div class="rn">${s.name}</div><div class="rl"><svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6.2 6.6.8-4.9 4.6 1.3 6.7L12 17.4l-5.9 3.4 1.3-6.7L2.5 9.5l6.6-.8z"/></svg>${RATING[s.id]} · ${S.pin?distText(s)+' from pin':s.loc}</div><div class="rp"><b>${fmt(s.pp)}</b> per person</div>
- ${s.id===3?`<div class="warn">${I.warn}Price went 10% up since last saved.</div>`:''}<div class="rs">${s.sum}</div></div>
+ ${s.id===2?`<div class="warn">${I.warn}Price went 10% up since last saved.</div>`:''}<div class="rs">${s.sum}</div></div>
  <div class="rvote"><button class="vb y ${v==='y'?'on':v==='n'?'dim':''}" data-a="recvote" data-v="y">${I.check}</button><button class="vb n ${v==='n'?'on':v==='y'?'dim':''}" data-a="recvote" data-v="n">${I.cross}</button></div>
  <div class="rfull"><button class="btn pri" data-a="seefull">See full comparison</button></div></div>`}).join('');
  return `<div class="screen rec"><div class="banner">Viewing as Alessia<select class="sel-dd" data-c="cur"><option ${S.cur==='EUR'?'selected':''}>EUR</option><option ${S.cur==='USD'?'selected':''}>USD</option></select></div><div class="rwrap"><button class="rarrow" data-a="recnav" data-v="-1" ${i===0?'disabled':''}>${I.left}</button>
